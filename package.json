@@ -1,0 +1,22 @@
+{
+  "name": "willplus-jig",
+  "version": "1.0.0",
+  "description": "WillPlus ADV state manipulation jig",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "frida-compile src/index.ts -o willplus-jig.js",
+    "watch": "frida-compile src/index.ts -o willplus-jig.js -w",
+    "build-fast": "frida-compile -xX src/index.ts -o willplus-jig.js",
+    "watch-fast": "frida-compile -xX src/index.ts -o willplus-jig.js -w"
+  },
+  "author": "dogtopus",
+  "dependencies": {
+    "iconv-lite": "ashtuchkin/iconv-lite#master"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^15.3.0",
+    "@types/node": "^14.0.13",
+    "frida-compile": "^9.3.0"
+  }
+}
