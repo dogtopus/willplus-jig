@@ -1,34 +1,36 @@
 # willplus-jig
 
+Jig for exploring and manipulating WillPlus ADV-based (before AdvHD) games.
+
 ## Build
 
 ```
 npm install
-npm build  # Or build-fast if using V8
+npm run build  # Or build-fast if using V8
 ```
 
-To enable automatic building on modification, use
+To enable automated building on modification, use
 
 ```
-npm watch  # Or watch-fast if using V8
+npm run watch  # Or watch-fast if using V8
 ```
 
-To target a different game (defaults to Haruka ni Aogi, Uruwashi no zh_TW edition), edit index.ts to include the corresponding offset file and rebuild.
+To target a different game (defaults to Haruka ni Aogi, Uruwashi no zh_TW edition), edit `index.ts` to include the corresponding offset file and rebuild.
 
 ## Usage
 
 ### Inside frida REPL
 
 ```
-# Spawn a new process, attach and immediately resume execution, with V8 runtime.
+# Spawn a new process, attach to it and immediately resume execution, with V8 runtime.
 frida -l willplus-jig.js -f path\to\game.exe --no-pause --runtime=v8
 ```
 
-All the features are accessible via the REPL.
+All the exported functions are accessible via the REPL.
 
 ### As a RPC agent
 
-Load `willplus-jig.js` with your custom host script, then use RPC to access all the features.
+Load `willplus-jig.js` with your custom host script, then use RPC to access all the exported functions.
 
 ## Exported functions
 
@@ -39,19 +41,19 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
 - `rio_traceback()`
   - Returns an array that contains traceback of RIO script (can be used after a script excuting (sic) error before closing the msgbox).
 - `rio_goto(label)`
-  - Jump to a RIO script (label). Return 0 if it fails.
+  - Jump to a RIO script (label). Return value depends on the game (usually 0 on failure and 1 on success).
 - `rio_call(label)`
-  - Call a RIO script (label). Return 0 if it fails.
+  - Call a RIO script (label). Return value depends on the game (usually 0 on failure and 1 on success).
 - `rio_register_script(addr, name)`
   - Register `addr` an in-memory script and label it `name`. Use it with `Memory.alloc` for ad-hoc script injection and execution.
 - `rio_delete_script(name)`
-  - Delete an in-memory script. Return `true` if the operation succeeded.
+  - Delete (unregister) an in-memory script (does not **explicitly** free the script buffer). Return `true` if the operation succeeded.
 - `rio_list_registered_script()`
   - Returns an array of all registered in-memory script label.
 - `rio_set_pc(pc)`
-  - Sets the program counter of the VM (relative to the start of the script).
+  - Sets the program counter of the RIO script VM (relative to the start of the script).
 - `rio_get_pc()`
-  - Returns the program counter of the VM.
+  - Returns the program counter of the RIO script VM.
 - `rio_get_current_script_buffer()`
   - Returns a `NativePointer` to the current script buffer. Useful for ad-hoc script patching.
 
@@ -62,7 +64,7 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
 
 ### Adding support for new games
 
-Support for other WillPlus games that uses close enough engine should be possible by reverse engineering the offsets for some critical functions and structures and writing a `offset.json` file. Below is a list of all used structures and functions.
+Support for other WillPlus games that uses close enough engine should be possible by finding the offsets for some critical functions and structures through reverse engineering and writing a `offset.json` file. Below is a list of all used structures and functions.
 
 - `will_flagbank`
   - Base address for the flag bank that holds all temporary/persistent flags and registers (magic flags that alters the engine behavior). Can typically be found by searching `memset` usage with size=2000 (clear all temporary flags).
@@ -73,9 +75,9 @@ Support for other WillPlus games that uses close enough engine should be possibl
 - `rio_current_script`
   - Pointer that points to the current loaded script. Can be found by looking at the implementation of `rio_goto` (HINT: it usually `free()`s the previously loaded script before doing anything else).
 - `rio_pc`
-  - Program counter of the RIO VM. Contains a pointer to some place within `*rio_current_script`. Can be found by looking at the interpreter for an incrementing pointer.
+  - Program counter of the RIO script VM. Contains a pointer to some place within `*rio_current_script`. Can be found by looking at the interpreter for an incrementing pointer.
 - `rio_sp`
-  - Call stack pointer of the RIO VM. Usually contains a number between 0 and 7 (since the stack size is usually 8). Can be found by looking at the implementation of `rio_call`.
+  - Call stack pointer of the RIO script VM. Usually contains a number between 0 and 7 (since the stack size is usually 8). Can be found by looking at the implementation of `rio_call`.
 - `rio_stack_base`
   - Base address of the call stack. Can be found by looking at the implementation of `rio_call`.
 - `rio_event_id`
