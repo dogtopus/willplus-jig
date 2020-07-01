@@ -64,10 +64,10 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
 
 ### Adding support for new games
 
-Support for other WillPlus games that uses close enough engine should be possible by finding the offsets for some critical functions and structures through reverse engineering and writing a `offset.json` file. Below is a list of all used structures and functions.
+Support for other WillPlus games that uses similar enough engine should be possible by finding the offsets for some critical functions and structures through reverse engineering and writing a `offset.json` file. Below is a list of all used structures and functions.
 
 - `will_flagbank`
-  - Base address for the flag bank that holds all temporary/persistent flags and registers (magic flags that alters the engine behavior). Can typically be found by searching `memset` usage with size=2000 (clear all temporary flags).
+  - Base address for the flag bank that holds all temporary/persistent flags and registers (magic flags that alters the engine behavior). Can typically be found by searching usage on `memset` stub with `c=0` and `n=2000` (clear all temporary flags).
 - `rio_goto`
   - Function that loads and jumps to a specific RIO script. Can be found by searching for the interpreter and looking for the implementation for `goto` instruction (opcode `0x07`)
 - `rio_call`
