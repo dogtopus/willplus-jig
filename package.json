@@ -19,7 +19,7 @@
     "iconv-lite": "^0.6.2"
   },
   "devDependencies": {
-    "@types/frida-gum": "^16.2.0",
+    "@types/frida-gum": "^16.2.1",
     "@types/node": "^14.14.14",
     "frida-compile": "^10.0.0"
   }
