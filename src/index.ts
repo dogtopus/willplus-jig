@@ -235,7 +235,7 @@ rpc.exports = {
 	rio_get_current_script_buffer: rio_get_current_script_buffer,
 };
 
-// REPR-friendliness
+// REPL-friendliness
 (global as any).flagbank_peek = flagbank_peek;
 (global as any).flagbank_poke = flagbank_poke;
 (global as any).flagbank_list_non_zero = flagbank_list_non_zero;
