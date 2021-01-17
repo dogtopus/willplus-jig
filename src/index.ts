@@ -213,8 +213,8 @@ Interceptor.attach(rio_call_offset, {
 // Man I hate shift_jis gore
 Interceptor.attach(Module.getExportByName('USER32.dll', 'MessageBoxA'), {
 	onEnter: function(args) {
-		const lpText = Buffer.from(_null_term_bytes(args[1]) || []);
-		const lpCaption = Buffer.from(_null_term_bytes(args[2]) || []);
+		const lpText = Buffer.from(_null_term_bytes(args[1]) || new ArrayBuffer(0));
+		const lpCaption = Buffer.from(_null_term_bytes(args[2]) || new ArrayBuffer(0));
 		send('msgbox: ' + iconv.decode(lpCaption, 'shift_jis') + ': ' + iconv.decode(lpText, 'shift_jis'));
 	}
 });
