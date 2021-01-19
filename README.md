@@ -6,13 +6,13 @@ Jig for exploring and manipulating WillPlus ADV-based (before AdvHD) games.
 
 ```
 npm install
-npm run build  # Or build-fast if using V8
+npm run build
 ```
 
 To enable automated building on modification, use
 
 ```
-npm run watch  # Or watch-fast if using V8
+npm run watch
 ```
 
 To target a different game (defaults to Haruka ni Aogi, Uruwashi no zh_TW edition), edit `index.ts` to include the corresponding offset file and rebuild.
