@@ -1,6 +1,6 @@
 import iconv from "iconv-lite";
 import crypto from "crypto";
-import * as offset from "./offset.kanitw.json"
+import { DataOffset, offsets } from "./offsets";
 
 
 const CreateFileW_ptr = Module.getExportByName('kernel32.dll', 'CreateFileW');
@@ -15,7 +15,9 @@ const OPEN_EXISTING = 3;
 const FILE_ATTRIBUTE_NORMAL = 1 << 7;
 const INVALID_HANDLE_VALUE = ptr('-1');
 
-function _match_known_adv_exe() {
+
+function _match_known_adv_exe(): DataOffset | null {
+    // TODO rewrite this with frida-fs after we add Windows support to it...
 	const buffer_size = 16384;
 	const exemodule = Process.enumerateModules()[0];
 	const exepath = exemodule.path;
@@ -29,7 +31,7 @@ function _match_known_adv_exe() {
 	if (fh == INVALID_HANDLE_VALUE) {
 		// TODO resolve errno
 		send('failed to open file');
-		return;
+		return null;
 	}
 
 	try {
@@ -48,13 +50,23 @@ function _match_known_adv_exe() {
 	} finally {
 		CloseHandle(fh);
 	}
-
-	send("exe hash: " + hash.digest('hex'));
+	const hexdigest = hash.digest('hex');
+	send("exe hash: " + hexdigest);
 	// TODO check for matching hash and return offsets
+	const offset = offsets.get(hexdigest);
+
+	return offset === undefined ? null : offset;
 }
 
-_match_known_adv_exe();
+const offset = _match_known_adv_exe();
 
+if (offset === null) {
+	send('Unknown exe. Instrumentation aborted.')
+	throw Error('Unknown exe. Instrumentation aborted.');
+}
+
+
+send('exe detected: ' + offset.entry_name);
 
 const will_flagbank_offset = ptr(offset.will_flagbank);
 const rio_goto_offset = ptr(offset.rio_goto);

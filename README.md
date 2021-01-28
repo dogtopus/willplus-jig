@@ -2,7 +2,7 @@
 
 ![Quick frida-compile check](https://github.com/dogtopus/willplus-jig/workflows/Quick%20frida-compile%20check/badge.svg)
 
-Jig for exploring and manipulating WillPlus ADV-based (before AdvHD) games.
+Jig for exploring and manipulating older WillPlus ADV (before AdvHD) games.
 
 ## Build
 
@@ -16,8 +16,6 @@ To enable automated building on modification, use
 ```
 npm run watch
 ```
-
-To target a different game (defaults to Haruka ni Aogi, Uruwashi no zh_TW edition), edit `index.ts` to include the corresponding offset file and rebuild.
 
 ## Usage
 
@@ -61,12 +59,12 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
 
 ## Supported games
 
-- Haruka ni Aogi, Uruwashi no (zh_TW release) (`offset.kanitw.json`)
-- Laughter Land (zh_TW release) (`offset.lltw.json`)
+- Haruka ni Aogi, Uruwashi no (zh_TW release)
+- Laughter Land (zh_TW release)
 
 ### Adding support for new games
 
-Support for other WillPlus games that uses similar enough engine should be possible by finding the offsets for some critical functions and structures through reverse engineering and writing a `offset.json` file. Below is a list of all used structures and functions.
+Support for other WillPlus games that uses similar enough engine should be possible by finding the offsets for some critical functions and structures through reverse engineering and add an entry in `offsets.ts` file. Below is a list of all used structures and functions.
 
 - `will_flagbank`
   - Base address for the flag bank that holds all temporary/persistent flags and registers (magic flags that alters the engine behavior). Can typically be found by searching usage on `memset` stub with `c=0` and `n=2000` (clear all temporary flags).
