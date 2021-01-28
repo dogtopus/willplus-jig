@@ -1,5 +1,5 @@
 import iconv from "iconv-lite";
-import crypto from "crypto";
+import shajs from "sha.js";
 import { DataOffset, offsets } from "./offsets";
 
 
@@ -27,7 +27,7 @@ function _match_known_adv_exe(): DataOffset | null {
 	const actual = Memory.alloc(Process.pointerSize);
 
 	const fh = CreateFileW(exepath_utf16, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	const hash = crypto.createHash('sha256');
+	const hash = shajs('sha256');
 	if (fh == INVALID_HANDLE_VALUE) {
 		// TODO resolve errno
 		send('failed to open file');
