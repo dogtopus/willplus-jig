@@ -1,5 +1,59 @@
 import iconv from "iconv-lite";
+import crypto from "crypto";
 import * as offset from "./offset.kanitw.json"
+
+
+const CreateFileW_ptr = Module.getExportByName('kernel32.dll', 'CreateFileW');
+const ReadFile_ptr = Module.getExportByName('kernel32.dll', 'ReadFile');
+const CloseHandle_ptr = Module.getExportByName('kernel32.dll', 'CloseHandle');
+const CreateFileW = new NativeFunction(CreateFileW_ptr, 'pointer', ['pointer', 'int32', 'int32', 'pointer', 'int32', 'int32', 'pointer']);
+const ReadFile = new NativeFunction(ReadFile_ptr, 'int', ['pointer', 'pointer', 'int32', 'pointer', 'pointer']);
+const CloseHandle = new NativeFunction(CloseHandle_ptr, 'int', ['pointer']);
+const GENERIC_READ = 1 << 31;
+const FILE_SHARE_READ = 1;
+const OPEN_EXISTING = 3;
+const FILE_ATTRIBUTE_NORMAL = 1 << 7;
+const INVALID_HANDLE_VALUE = ptr('-1');
+
+function _match_known_adv_exe() {
+	const buffer_size = 16384;
+	const exemodule = Process.enumerateModules()[0];
+	const exepath = exemodule.path;
+	const exepath_utf16 = Memory.allocUtf16String(exepath);
+
+	const buf = Memory.alloc(buffer_size);
+	const actual = Memory.alloc(Process.pointerSize);
+
+	const fh = CreateFileW(exepath_utf16, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	const hash = crypto.createHash('sha256');
+	if (fh == INVALID_HANDLE_VALUE) {
+		// TODO resolve errno
+		send('failed to open file');
+		return;
+	}
+
+	try {
+		send('hashing exe located at ' + exepath);
+		while (true) {
+			const result = ReadFile(fh, buf, buffer_size, actual, NULL);
+			if (result != 0 && actual.readS32() == 0) {
+				break;
+			} else if (result == 0) {
+				// TODO resolve errno
+				send('an error occurred');
+				break;
+			}
+			hash.update(Buffer.from(buf.readByteArray(actual.readS32()) || new ArrayBuffer(0)));
+		}
+	} finally {
+		CloseHandle(fh);
+	}
+
+	send("exe hash: " + hash.digest('hex'));
+	// TODO check for matching hash and return offsets
+}
+
+_match_known_adv_exe();
 
 
 const will_flagbank_offset = ptr(offset.will_flagbank);
