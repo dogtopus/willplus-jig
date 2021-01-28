@@ -1,5 +1,7 @@
 # willplus-jig
 
+![Quick frida-compile check](https://github.com/dogtopus/willplus-jig/workflows/Quick%20frida-compile%20check/badge.svg)
+
 Jig for exploring and manipulating WillPlus ADV-based (before AdvHD) games.
 
 ## Build
