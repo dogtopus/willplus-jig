@@ -228,7 +228,7 @@ function rio_call(label: string) {
 	return _rio_call(Memory.allocAnsiString(label));
 }
 
-function rio_register_script(addr: NativePointer, name: string | undefined | null) {
+function rio_register_script(addr: NativePointer, name?: string | undefined | null) {
 	if (name === undefined || name === null) {
 		name = '<' + addr.toString() + '>';
 	}
@@ -251,20 +251,20 @@ function rio_get_current_script_buffer() {
 	return rio_current_script.readPointer();
 }
 
-function save_game(index: number, is_auto: boolean | null | undefined) {
+function save_game(index: number, is_auto?: boolean | null | undefined) {
 	return _save_game(index, (is_auto === null || is_auto === undefined) ? 0 : (is_auto ? 1 : 0));
 }
 
-function load_game(index: number, is_auto: boolean | null | undefined) {
+function load_game(index: number, is_auto?: boolean | null | undefined) {
 	return _load_game(index, (is_auto === null || is_auto === undefined) ? 0 : (is_auto ? 1 : 0));
 }
 
 function quick_save() {
-	return save_game(qsave_index, false);
+	return save_game(qsave_index);
 }
 
 function quick_load() {
-	return load_game(qsave_index, false);
+	return load_game(qsave_index);
 }
 
 Interceptor.replace(rio_goto_offset, new NativeCallback(function () {
