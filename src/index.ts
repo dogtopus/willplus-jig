@@ -6,12 +6,15 @@ import { DataOffset, offsets } from "./offsets";
 const CreateFileW_ptr = Module.getExportByName('kernel32.dll', 'CreateFileW');
 const ReadFile_ptr = Module.getExportByName('kernel32.dll', 'ReadFile');
 const CloseHandle_ptr = Module.getExportByName('kernel32.dll', 'CloseHandle');
-const CreateFileW = new NativeFunction(CreateFileW_ptr, 'pointer', ['pointer', 'int32', 'int32', 'pointer', 'int32', 'int32', 'pointer']);
-const ReadFile = new NativeFunction(ReadFile_ptr, 'int', ['pointer', 'pointer', 'int32', 'pointer', 'pointer']);
-const CloseHandle = new NativeFunction(CloseHandle_ptr, 'int', ['pointer']);
 const MessageBoxA_ptr = Module.getExportByName('USER32.dll', 'MessageBoxA');
 const MessageBoxW_ptr = Module.getExportByName('USER32.dll', 'MessageBoxW');
-const MessageBoxW = new NativeFunction(MessageBoxW_ptr, 'int', ['pointer', 'pointer', 'pointer', 'uint32']);
+
+const CreateFileW = new NativeFunction(CreateFileW_ptr, 'pointer', ['pointer', 'int32', 'int32', 'pointer', 'int32', 'int32', 'pointer'], 'stdcall');
+const ReadFile = new NativeFunction(ReadFile_ptr, 'int', ['pointer', 'pointer', 'int32', 'pointer', 'pointer'], 'stdcall');
+const CloseHandle = new NativeFunction(CloseHandle_ptr, 'int', ['pointer'], 'stdcall');
+const MessageBoxW = new NativeFunction(MessageBoxW_ptr, 'int', ['pointer', 'pointer', 'pointer', 'uint32'], 'stdcall');
+
+// COnstants for CreateFileW
 const GENERIC_READ = 1 << 31;
 const FILE_SHARE_READ = 1;
 const OPEN_EXISTING = 3;
@@ -107,6 +110,7 @@ Memory.patchCode(rio_goto_offset_thunk, Process.pageSize, code => {
 	writer.putMovRegReg('esp', 'ebp'); // mov esp, ebp
 	writer.putPopReg('ebp'); // pop ebp
 	writer.putRet(); // ret
+	writer.flush();
 });
 Memory.protect(rio_goto_offset_thunk, Process.pageSize, 'r-x');
 const _rio_goto = new NativeFunction(rio_goto_offset_thunk, 'int32', ['pointer']);
@@ -351,7 +355,7 @@ Interceptor.replace(MessageBoxA_ptr, new NativeCallback((hWnd, lpText, lpCaption
 	const lpCaptionString = iconv.decode(lpCaptionBuffer, 'shift_jis');
 	const lpTextW = Memory.allocUtf16String(lpTextString);
 	const lpCaptionW = Memory.allocUtf16String(lpCaptionString);
-	send('msgbox: ' + lpTextString + ': ' + lpCaptionString);
+	send('msgbox: ' + lpCaptionString + ': ' + lpTextString);
 	send('traceback: ' + JSON.stringify(rio_traceback()));
 	return MessageBoxW(hWnd, lpTextW, lpCaptionW, uType);
 }, 'int', ['pointer', 'pointer', 'pointer', 'uint32'], 'stdcall'));
@@ -397,3 +401,6 @@ rpc.exports = {
 (global as any).load_game = load_game;
 (global as any).quick_save = quick_save;
 (global as any).quick_load = quick_load;
+
+// Pin the thunk to global so quickjs won't garbage collect it
+(global as any)._rio_goto_offset_thunk = rio_goto_offset_thunk;
