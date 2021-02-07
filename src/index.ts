@@ -11,7 +11,7 @@ const ReadFile = new NativeFunction(ReadFile_ptr, 'int', ['pointer', 'pointer', 
 const CloseHandle = new NativeFunction(CloseHandle_ptr, 'int', ['pointer']);
 const MessageBoxA_ptr = Module.getExportByName('USER32.dll', 'MessageBoxA');
 const MessageBoxW_ptr = Module.getExportByName('USER32.dll', 'MessageBoxW');
-const MessageBoxW = new NativeFunction(MessageBoxW_ptr, 'int32', ['pointer', 'pointer', 'pointer', 'uint32']);
+const MessageBoxW = new NativeFunction(MessageBoxW_ptr, 'int', ['pointer', 'pointer', 'pointer', 'uint32']);
 const GENERIC_READ = 1 << 31;
 const FILE_SHARE_READ = 1;
 const OPEN_EXISTING = 3;
@@ -353,8 +353,8 @@ Interceptor.replace(MessageBoxA_ptr, new NativeCallback((hWnd, lpText, lpCaption
 	const lpCaptionW = Memory.allocUtf16String(lpCaptionString);
 	send('msgbox: ' + lpTextString + ': ' + lpCaptionString);
 	send('traceback: ' + JSON.stringify(rio_traceback()));
-	return MessageBoxW(hWnd, lpTextW, lpCaptionW, uType);;
-}, 'int32', ['pointer', 'pointer', 'pointer', 'uint32']));
+	return MessageBoxW(hWnd, lpTextW, lpCaptionW, uType);
+}, 'int', ['pointer', 'pointer', 'pointer', 'uint32'], 'stdcall'));
 
 // RPC
 rpc.exports = {
