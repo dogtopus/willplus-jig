@@ -56,11 +56,18 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
   - Returns the program counter of the RIO script VM.
 - `rio_get_current_script_buffer()`
   - Returns a `NativePointer` to the current script buffer. Useful for ad-hoc script patching.
+- `save_persistent()` and `load_persistent()`
+  - Immediately save/load persistent data. Combine with flag bank manipulation functions to ensure the modifications are saved to disk.
+- `save_game(index, is_auto)` and `load_game(index, is_auto)`
+  - Immediately save/load savegame. Note that loading may freeze the game for a while for some unknown reason. Combine with flag bank manipulation functions to ensure the modifications are saved to disk.
+- `quick_save()` and `quick_load()`
+  - Shortcut for `{save,load}_game(qsave_index, false)`
 
 ## Supported games
 
-- Haruka ni Aogi, Uruwashi no (zh_TW release)
-- Laughter Land (zh_TW release)
+- Haruka ni Aogi, Uruwashi no (Future-Digi zh_TW release)
+- Laughter Land (Future-Digi zh_TW release)
+- Yume Miru Kusuri (Peach Princess en_US release)
 
 ### Adding support for new games
 
