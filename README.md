@@ -84,5 +84,11 @@ Support for other WillPlus games that uses similar enough engine should be possi
   - "Event ID" of the currently executing script. Printed on `rio_traceback()`. Probably used by the engine as a way to mark seen text. Can be found by looking the implementation of `event_id` instruction (opcode `0x8c`).
 - `rio_current_label`
   - Current name (label) of the script. Can be found by Can be found by looking at the implementation of `rio_goto` for `memcpy` (could be inlined).
+- `save_persistent` and `load_persistent`
+  - Persistent data operation. Search for mentions about `save00` or `save000`.
+- `save_game` and `load_game`
+  - Savegame operation. Search for mentions about `save` and `asave`.
 - `engine_malloc_stub` and `engine_free_stub`
   - Engine's `malloc` and `free` implementation.
+- `qsave_index`
+  - Hardcoded slot index for quick save file. Search for calls to `save_game` and `load_game` with hardcoded slot index.

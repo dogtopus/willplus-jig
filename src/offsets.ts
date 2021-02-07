@@ -15,6 +15,7 @@ interface DataOffset {
     load_game: string;
     engine_malloc_stub: string;
     engine_free_stub: string;
+    qsave_index: number;
 }
 type OffsetTable = Map<string, DataOffset>;
 
@@ -36,7 +37,8 @@ offsets.set('0fee62345f0cb82f88ccee490db10ecc36ce7a9df9650b33b1676b79428a86b1', 
     save_game: "0x411f50",
     load_game: "0x4124c0",
     engine_malloc_stub: "0x44f296",
-    engine_free_stub: "0x44f1b9"
+    engine_free_stub: "0x44f1b9",
+    qsave_index: 100,
 });
 
 offsets.set('59c6e1edbb9506b04e269808e557394f1e3f1ecd8b825e8431cbde0449811a95', {
@@ -55,7 +57,28 @@ offsets.set('59c6e1edbb9506b04e269808e557394f1e3f1ecd8b825e8431cbde0449811a95', 
     save_game: "0x411ae0",
     load_game: "0x412050",
     engine_malloc_stub: "0x44e886",
-    engine_free_stub: "0x44e7a9"
+    engine_free_stub: "0x44e7a9",
+    qsave_index: 100,
+});
+
+offsets.set('c66b6c49b409656b3d723cd8d296eca274e0903785a36285e81c72395d983917', {
+    entry_name: "ymken",
+    will_flagbank: "0x557c18",
+    rio_goto: "0x405620",
+    rio_call: "0x405830",
+    rio_current_script: "0x47c144",
+    rio_pc: "0x47c148",
+    rio_sp: "0x47dc78",
+    rio_stack_base: "0x47dc7c",
+    rio_event_id: "0x47ce68",
+    rio_current_label: "0x47c134",
+    save_persistent: "0x40eaa0",
+    load_persistent: "0x40eb40",
+    save_game: "0x40ebe0",
+    load_game: "0x40f0d0",
+    engine_malloc_stub: "0x444c96",
+    engine_free_stub: "0x444bb9",
+    qsave_index: 99,
 });
 
 export {DataOffset, OffsetTable, offsets};

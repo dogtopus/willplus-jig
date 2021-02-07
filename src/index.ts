@@ -83,6 +83,7 @@ const save_game_offset = ptr(offset.save_game);
 const load_game_offset = ptr(offset.load_game);
 const malloc_stub = ptr(offset.engine_malloc_stub);
 const free_stub = ptr(offset.engine_free_stub);
+const qsave_index = offset.qsave_index;
 
 
 // thunks
@@ -256,11 +257,11 @@ function load_game(index: number, is_auto: boolean | null | undefined) {
 }
 
 function quick_save() {
-	return save_game(100, false);
+	return save_game(qsave_index, false);
 }
 
 function quick_load() {
-	return load_game(100, false);
+	return load_game(qsave_index, false);
 }
 
 Interceptor.replace(rio_goto_offset, new NativeCallback(function () {
