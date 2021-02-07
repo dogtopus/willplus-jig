@@ -9,6 +9,10 @@ interface DataOffset {
     rio_stack_base: string;
     rio_event_id: string;
     rio_current_label: string;
+    save_persistent: string;
+    load_persistent: string;
+    save_game: string;
+    load_game: string;
     engine_malloc_stub: string;
     engine_free_stub: string;
 }
@@ -27,6 +31,10 @@ offsets.set('0fee62345f0cb82f88ccee490db10ecc36ce7a9df9650b33b1676b79428a86b1', 
     rio_stack_base: "0x491774",
     rio_event_id: "0x490488",
     rio_current_label: "0x48f78c",
+    save_persistent: "0x411e50",
+    load_persistent: "0x411ed0",
+    save_game: "0x411f50",
+    load_game: "0x4124c0",
     engine_malloc_stub: "0x44f296",
     engine_free_stub: "0x44f1b9"
 });
@@ -42,6 +50,10 @@ offsets.set('59c6e1edbb9506b04e269808e557394f1e3f1ecd8b825e8431cbde0449811a95', 
     rio_stack_base: "0x4906fc",
     rio_event_id: "0x48f500",
     rio_current_label: "0x48e804",
+    save_persistent: "0x4119e0",
+    load_persistent: "0x411a60",
+    save_game: "0x411ae0",
+    load_game: "0x412050",
     engine_malloc_stub: "0x44e886",
     engine_free_stub: "0x44e7a9"
 });

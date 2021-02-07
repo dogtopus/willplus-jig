@@ -52,7 +52,7 @@ function _match_known_adv_exe(): DataOffset | null {
 	}
 	const hexdigest = hash.digest('hex');
 	send("exe hash: " + hexdigest);
-	// TODO check for matching hash and return offsets
+
 	const offset = offsets.get(hexdigest);
 
 	return offset === undefined ? null : offset;
@@ -77,18 +77,13 @@ const rio_sp = ptr(offset.rio_sp);
 const rio_stack_base = ptr(offset.rio_stack_base); // uint32_t event_id, uint32_t pc, char label[16]
 const rio_event_id_offset = ptr(offset.rio_event_id);
 const rio_current_label = ptr(offset.rio_current_label); // 16-bytes literal
+const save_persistent_offset = ptr(offset.save_persistent);
+const load_persistent_offset = ptr(offset.load_persistent);
+const save_game_offset = ptr(offset.save_game);
+const load_game_offset = ptr(offset.load_game);
 const malloc_stub = ptr(offset.engine_malloc_stub);
 const free_stub = ptr(offset.engine_free_stub);
 
-
-// Unused offsets
-// const save_persistent = ptr('0x411e50');
-// const load_persistent = ptr('0x411ed0');
-// const rio_interpreter_loop = ptr('0x406d10');
-// const fopen_stub = ptr('0x450c23');
-// const fclose_stub = ptr('0x450ca8');
-// const rio_str_brand = ptr('0x48bf8c');
-// const rio_print_error = ptr('0x43a030');
 
 // thunks
 const rio_goto_offset_thunk = Memory.alloc(Process.pageSize);
@@ -112,6 +107,12 @@ Memory.patchCode(rio_goto_offset_thunk, Process.pageSize, code => {
 Memory.protect(rio_goto_offset_thunk, Process.pageSize, 'r-x');
 const _rio_goto = new NativeFunction(rio_goto_offset_thunk, 'int32', ['pointer']);
 const _rio_call = new NativeFunction(rio_call_offset, 'int32', ['pointer']);
+
+const save_persistent = new NativeFunction(save_persistent_offset, 'int32', []);
+const load_persistent = new NativeFunction(load_persistent_offset, 'int32', []);
+
+const _save_game = new NativeFunction(save_game_offset, 'int32', ['int32', 'int32']);
+const _load_game = new NativeFunction(load_game_offset, 'int32', ['int32', 'int32']);
 
 const engine_malloc = new NativeFunction(malloc_stub, 'pointer', ['uint32']);
 const engine_free = new NativeFunction(free_stub, 'void', ['pointer']);
@@ -246,6 +247,22 @@ function rio_get_current_script_buffer() {
 	return rio_current_script.readPointer();
 }
 
+function save_game(index: number, is_auto: boolean | null | undefined) {
+	return _save_game(index, (is_auto === null || is_auto === undefined) ? 0 : (is_auto ? 1 : 0));
+}
+
+function load_game(index: number, is_auto: boolean | null | undefined) {
+	return _load_game(index, (is_auto === null || is_auto === undefined) ? 0 : (is_auto ? 1 : 0));
+}
+
+function quick_save() {
+	return save_game(100, false);
+}
+
+function quick_load() {
+	return load_game(100, false);
+}
+
 Interceptor.replace(rio_goto_offset, new NativeCallback(function () {
 	if (this !== undefined) {
 		const label = ((this.context as any).edi as NativePointer).readCString();
@@ -276,12 +293,59 @@ Interceptor.attach(rio_call_offset, {
 	},
 });
 
+Interceptor.attach(save_persistent_offset, {
+	onLeave: function(ret) {
+		if (ret.isNull()) {
+			send('save_persistent: Failed');
+		} else {
+			send('save_persistent: OK');
+		}
+	}
+});
+
+Interceptor.attach(load_persistent_offset, {
+	onLeave: function(ret) {
+		if (ret.isNull()) {
+			send('load_persistent: Failed');
+		} else {
+			send('load_persistent: OK');
+		}
+	}
+});
+
+Interceptor.attach(save_game_offset, {
+	onEnter: function(args) {
+		send('save_game: Saving to' + (args[1].isNull() ? '' : ' auto' ) + ' slot ' + args[0]);
+	},
+	onLeave: function(ret) {
+		if (ret.isNull()) {
+			send('save_game: Failed');
+		} else {
+			send('save_game: OK');
+		}
+	}
+});
+
+Interceptor.attach(load_game_offset, {
+	onEnter: function(args) {
+		send('load_game: Loading from' + (args[1].isNull() ? '' : ' auto' ) + ' slot ' + args[0]);
+	},
+	onLeave: function(ret) {
+		if (ret.isNull()) {
+			send('load_game: Failed');
+		} else {
+			send('load_game: OK');
+		}
+	}
+});
+
 // Man I hate shift_jis gore
 Interceptor.attach(Module.getExportByName('USER32.dll', 'MessageBoxA'), {
 	onEnter: function(args) {
 		const lpText = Buffer.from(_null_term_bytes(args[1]) || new ArrayBuffer(0));
 		const lpCaption = Buffer.from(_null_term_bytes(args[2]) || new ArrayBuffer(0));
 		send('msgbox: ' + iconv.decode(lpCaption, 'shift_jis') + ': ' + iconv.decode(lpText, 'shift_jis'));
+		send('traceback: ' + JSON.stringify(rio_traceback()));
 	}
 });
 
@@ -299,6 +363,12 @@ rpc.exports = {
 	rio_set_pc: rio_set_pc,
 	rio_get_pc: rio_get_pc,
 	rio_get_current_script_buffer: rio_get_current_script_buffer,
+	save_persistent: save_persistent,
+	load_persistent: load_persistent,
+	save_game: save_game,
+	load_game: load_game,
+	quick_save: quick_save,
+	quick_load: quick_load,
 };
 
 // REPL-friendliness
@@ -314,3 +384,9 @@ rpc.exports = {
 (global as any).rio_set_pc = rio_set_pc;
 (global as any).rio_get_pc = rio_get_pc;
 (global as any).rio_get_current_script_buffer = rio_get_current_script_buffer;
+(global as any).save_persistent = save_persistent;
+(global as any).load_persistent = load_persistent;
+(global as any).save_game = save_game;
+(global as any).load_game = load_game;
+(global as any).quick_save = quick_save;
+(global as any).quick_load = quick_load;
