@@ -9,6 +9,9 @@ const CloseHandle_ptr = Module.getExportByName('kernel32.dll', 'CloseHandle');
 const CreateFileW = new NativeFunction(CreateFileW_ptr, 'pointer', ['pointer', 'int32', 'int32', 'pointer', 'int32', 'int32', 'pointer']);
 const ReadFile = new NativeFunction(ReadFile_ptr, 'int', ['pointer', 'pointer', 'int32', 'pointer', 'pointer']);
 const CloseHandle = new NativeFunction(CloseHandle_ptr, 'int', ['pointer']);
+const MessageBoxA_ptr = Module.getExportByName('USER32.dll', 'MessageBoxA');
+const MessageBoxW_ptr = Module.getExportByName('USER32.dll', 'MessageBoxW');
+const MessageBoxW = new NativeFunction(MessageBoxW_ptr, 'int32', ['pointer', 'pointer', 'pointer', 'uint32']);
 const GENERIC_READ = 1 << 31;
 const FILE_SHARE_READ = 1;
 const OPEN_EXISTING = 3;
@@ -341,14 +344,17 @@ Interceptor.attach(load_game_offset, {
 });
 
 // Man I hate shift_jis gore
-Interceptor.attach(Module.getExportByName('USER32.dll', 'MessageBoxA'), {
-	onEnter: function(args) {
-		const lpText = Buffer.from(_null_term_bytes(args[1]) || new ArrayBuffer(0));
-		const lpCaption = Buffer.from(_null_term_bytes(args[2]) || new ArrayBuffer(0));
-		send('msgbox: ' + iconv.decode(lpCaption, 'shift_jis') + ': ' + iconv.decode(lpText, 'shift_jis'));
-		send('traceback: ' + JSON.stringify(rio_traceback()));
-	}
-});
+Interceptor.replace(MessageBoxA_ptr, new NativeCallback((hWnd, lpText, lpCaption, uType) => {
+	const lpTextBuffer = Buffer.from(_null_term_bytes(lpText) || new ArrayBuffer(0));
+	const lpCaptionBuffer = Buffer.from(_null_term_bytes(lpCaption) || new ArrayBuffer(0));
+	const lpTextString = iconv.decode(lpTextBuffer, 'shift_jis');
+	const lpCaptionString = iconv.decode(lpCaptionBuffer, 'shift_jis');
+	const lpTextW = Memory.allocUtf16String(lpTextString);
+	const lpCaptionW = Memory.allocUtf16String(lpCaptionString);
+	send('msgbox: ' + lpTextString + ': ' + lpCaptionString);
+	send('traceback: ' + JSON.stringify(rio_traceback()));
+	return MessageBoxW(hWnd, lpTextW, lpCaptionW, uType);;
+}, 'int32', ['pointer', 'pointer', 'pointer', 'uint32']));
 
 // RPC
 rpc.exports = {
