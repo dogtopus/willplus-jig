@@ -45,7 +45,7 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
 - `rio_call(label)`
   - Call a RIO script (label). Return value depends on the game (usually 0 on failure and 1 on success).
 - `rio_register_script(addr, name)`
-  - Register `addr` an in-memory script and label it `name`. Use it with `Memory.alloc` for ad-hoc script injection and execution.
+  - Register `addr` as in-memory script and label it `name`. Use it with `Memory.alloc` for ad-hoc script injection and execution.
 - `rio_delete_script(name)`
   - Delete (unregister) an in-memory script (does not **explicitly** free the script buffer). Return `true` if the operation succeeded.
 - `rio_list_registered_script()`
