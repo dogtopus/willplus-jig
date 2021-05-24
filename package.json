@@ -14,7 +14,7 @@
     "watch": "frida-compile src/index.ts -o willplus-jig.js -w"
   },
   "dependencies": {
-    "iconv-lite": "^0.6.2",
+    "iconv-lite": "^0.6.3",
     "sha.js": "^2.4.11"
   },
   "devDependencies": {
