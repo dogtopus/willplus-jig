@@ -20,7 +20,7 @@
   "devDependencies": {
     "@types/sha.js": "^2.4.0",
     "@types/frida-gum": "^17.1.0",
-    "@types/node": "^16.4.13",
+    "@types/node": "^16.6.0",
     "frida-compile": "^10.2.4"
   }
 }
