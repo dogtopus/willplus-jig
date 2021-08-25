@@ -81,4 +81,24 @@ offsets.set('c66b6c49b409656b3d723cd8d296eca274e0903785a36285e81c72395d983917', 
     qsave_index: 99,
 });
 
+offsets.set('9b02546022477bc471b4003719fcd909b252468bca6150e79603bad014c388e9', {
+    entry_name: "io",
+    will_flagbank: "0x6b8308",
+    rio_goto: "0x409780",
+    rio_call: "0x409990",
+    rio_current_script: "0x4d6b98",
+    rio_pc: "0x4d6b9c",
+    rio_sp: "0x4dfb98",
+    rio_stack_base: "0x4dfb9c",
+    rio_event_id: "0x4dcd78",
+    rio_current_label: "0x4d6b88",
+    save_persistent: "0x417520",
+    load_persistent: "0x4175e0",
+    save_game: "0x4176a0",
+    load_game: "0x417d40",
+    engine_malloc_stub: "0x4774b9",
+    engine_free_stub: "0x4773dc",
+    qsave_index: 999,
+})
+
 export {DataOffset, OffsetTable, offsets};
