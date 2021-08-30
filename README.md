@@ -68,6 +68,7 @@ Load `willplus-jig.js` with your custom host script, then use RPC to access all 
 - Haruka ni Aogi, Uruwashi no (Future-Digi zh_TW release)
 - Laughter Land (Future-Digi zh_TW release)
 - Yume Miru Kusuri (Peach Princess en_US release)
+- I/O Revision II (original Japanese release)
 
 ### Adding support for new games
 

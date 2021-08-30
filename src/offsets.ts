@@ -99,6 +99,6 @@ offsets.set('9b02546022477bc471b4003719fcd909b252468bca6150e79603bad014c388e9', 
     engine_malloc_stub: "0x4774b9",
     engine_free_stub: "0x4773dc",
     qsave_index: 999,
-})
+});
 
 export {DataOffset, OffsetTable, offsets};
