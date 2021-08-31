@@ -15,6 +15,7 @@ interface DataOffset {
     load_game: string;
     engine_malloc_stub: string;
     engine_free_stub: string;
+    extra_features: Array<string>;
     qsave_index: number;
 }
 type OffsetTable = Map<string, DataOffset>;
@@ -38,6 +39,7 @@ offsets.set('0fee62345f0cb82f88ccee490db10ecc36ce7a9df9650b33b1676b79428a86b1', 
     load_game: "0x4124c0",
     engine_malloc_stub: "0x44f296",
     engine_free_stub: "0x44f1b9",
+    extra_features: [],
     qsave_index: 100,
 });
 
@@ -58,6 +60,7 @@ offsets.set('59c6e1edbb9506b04e269808e557394f1e3f1ecd8b825e8431cbde0449811a95', 
     load_game: "0x412050",
     engine_malloc_stub: "0x44e886",
     engine_free_stub: "0x44e7a9",
+    extra_features: [],
     qsave_index: 100,
 });
 
@@ -78,6 +81,7 @@ offsets.set('c66b6c49b409656b3d723cd8d296eca274e0903785a36285e81c72395d983917', 
     load_game: "0x40f0d0",
     engine_malloc_stub: "0x444c96",
     engine_free_stub: "0x444bb9",
+    extra_features: [],
     qsave_index: 99,
 });
 
@@ -98,6 +102,28 @@ offsets.set('9b02546022477bc471b4003719fcd909b252468bca6150e79603bad014c388e9', 
     load_game: "0x417d40",
     engine_malloc_stub: "0x4774b9",
     engine_free_stub: "0x4773dc",
+    extra_features: ['fopen_a2w'],
+    qsave_index: 999,
+});
+
+offsets.set('029037f5834b04590825b8e3c42885684deedd6915b62771920e26120ce11bf6', {
+    entry_name: "ioen_lemnisca",
+    will_flagbank: "0x6b8308",
+    rio_goto: "0x409780",
+    rio_call: "0x409990",
+    rio_current_script: "0x4d6b98",
+    rio_pc: "0x4d6b9c",
+    rio_sp: "0x4dfb98",
+    rio_stack_base: "0x4dfb9c",
+    rio_event_id: "0x4dcd78",
+    rio_current_label: "0x4d6b88",
+    save_persistent: "0x417520",
+    load_persistent: "0x4175e0",
+    save_game: "0x4176a0",
+    load_game: "0x417d40",
+    engine_malloc_stub: "0x4774b9",
+    engine_free_stub: "0x4773dc",
+    extra_features: ['fopen_a2w'],
     qsave_index: 999,
 });
 
