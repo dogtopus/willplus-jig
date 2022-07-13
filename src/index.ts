@@ -1,7 +1,7 @@
 import iconv from "iconv-lite";
 import shajs from "sha.js";
-import { DataOffset, offsets } from "./offsets";
-import * as win32 from "./win32api_helper";
+import { DataOffset, offsets } from "./offsets.js";
+import * as win32 from "./win32api_helper.js";
 
 
 function w32strerror(errno: number): string {
