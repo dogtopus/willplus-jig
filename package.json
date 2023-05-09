@@ -10,17 +10,12 @@
   },
   "main": "src/index.ts",
   "scripts": {
-    "build": "frida-compile src/index.ts -o willplus-jig.js",
-    "watch": "frida-compile src/index.ts -o willplus-jig.js -w"
-  },
-  "dependencies": {
-    "iconv-lite": "^0.6.3",
-    "sha.js": "^2.4.11"
+    "build": "frida-compile src/index.ts -o willplus-jig.js -c",
+    "watch": "frida-compile src/index.ts -o willplus-jig.js -w -c"
   },
   "devDependencies": {
-    "@types/sha.js": "^2.4.0",
     "@types/frida-gum": "^18.3.2",
     "@types/node": "^20.1.0",
-    "frida-compile": "^16.1.8"
+    "frida-compile": "^16.2.1"
   }
 }

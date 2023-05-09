@@ -6,7 +6,6 @@
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true
+    "moduleResolution": "nodenext"
   }
 }

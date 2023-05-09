@@ -1,67 +1,31 @@
-import iconv from "iconv-lite";
-import shajs from "sha.js";
 import { DataOffset, offsets } from "./offsets.js";
-import * as win32 from "./win32api_helper.js";
-
-
-function w32strerror(errno: number): string {
-	const lpMsgBuf = Memory.alloc(Process.pageSize);
-	win32.FormatMessageW(
-		win32.FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			win32.FORMAT_MESSAGE_FROM_SYSTEM |
-			win32.FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		errno,
-		win32.LANG_NEUTRAL_SUBLANG_DEFAULT,
-		lpMsgBuf,
-		0, NULL
-	);
-	const err = lpMsgBuf.readPointer().readUtf16String();
-	win32.LocalFree(lpMsgBuf.readPointer());
-	return err || "";
-}
 
 function _match_known_adv_exe(): DataOffset | null {
-    // TODO rewrite this with frida-fs after we add Windows support to it...
 	const buffer_size = 16384;
 	const exemodule = Process.enumerateModules()[0];
 	const exepath = exemodule.path;
-	const exepath_utf16 = Memory.allocUtf16String(exepath);
 
-	const buf = Memory.alloc(buffer_size);
-	const actual = Memory.alloc(Process.pointerSize);
+	const exefile = new File(exepath, 'rb');
 
-	const sysresult = win32.CreateFileW(exepath_utf16, win32.GENERIC_READ, win32.FILE_SHARE_READ, NULL, win32.OPEN_EXISTING, win32.FILE_ATTRIBUTE_NORMAL, NULL);
-	const fh = sysresult.value;
-	const hash = shajs('sha256');
-	if (fh == win32.INVALID_HANDLE_VALUE) {
-		const err = (sysresult as WindowsSystemFunctionResult<NativePointer>).lastError;
-		send('failed to open file: ' + w32strerror(err));
-		return null;
-	}
-
+	let result = null;
 	try {
-		send('hashing exe located at ' + exepath);
+		const checksum = new Checksum('sha256');
 		while (true) {
-			const result = win32.ReadFile(fh, buf, buffer_size, actual, NULL);
-			if (result != 0 && actual.readS32() == 0) {
-				break;
-			} else if (result == 0) {
-				// TODO resolve errno
-				send('an error occurred');
+			const data = exefile.readBytes(buffer_size);
+			if (data.byteLength == 0) {
 				break;
 			}
-			hash.update(Buffer.from(buf.readByteArray(actual.readS32()) || new ArrayBuffer(0)));
+			checksum.update(data);
 		}
-	} finally {
-		win32.CloseHandle(fh);
+		const offset = offsets.get(checksum.getString());
+		if (offset !== undefined) {
+			result = offset;
+		}
+	} catch (e) {
+		console.error(`An error has occurred when calculating checksum: ${e}`);
 	}
-	const hexdigest = hash.digest('hex');
-	send("exe hash: " + hexdigest);
-
-	const offset = offsets.get(hexdigest);
-
-	return offset === undefined ? null : offset;
+	exefile.close();
+	return result;
 }
 
 const offset = _match_known_adv_exe();
@@ -271,52 +235,6 @@ function quick_load() {
 	return load_game(qsave_index);
 }
 
-function _a2w(astr: NativePointer, encoding: string): NativePointer {
-	let nts = _null_term_bytes(astr);
-	if (nts === null) {
-		nts = new ArrayBuffer(0);
-	}
-	//console.log(hexdump(nts));
-	const buf = Buffer.from(nts);
-	const decoded_str = iconv.decode(buf, encoding);
-	const wptr = Memory.allocUtf16String(decoded_str);
-	return wptr;
-}
-
-function _CreateFileA2W_impl(
-		lpFileName: NativePointer,
-		dwDesiredAccess: number,
-		dwShareMode: number,
-		lpSecurityAttributes: NativePointer,
-		dwCreationDisposition: number,
-		dwFlagsAndAttributes: number,
-		hTemplateFile: NativePointer): NativePointer {
-	const lpFileNameW = _a2w(lpFileName, 'cp932');
-	const sysresult = win32.CreateFileW(lpFileNameW, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-	const result = sysresult.value;
-	if (result.equals(win32.INVALID_HANDLE_VALUE)) {
-		const err = (sysresult as WindowsSystemFunctionResult<NativePointer>).lastError;
-		send('CreateFileA: Failed to open ' + lpFileNameW.readUtf16String() + ': ' + w32strerror(err));
-	}
-	return result;
-}
-
-function _CreateDirectoryA2W_impl(lpPathName: NativePointer, lpSecurityAttributes: NativePointer): number {
-	const lpPathNameW = _a2w(lpPathName, 'cp932');
-	const sysresult = win32.CreateDirectoryW(lpPathNameW, lpSecurityAttributes);
-	const result = sysresult.value;
-	if (result == 0) {
-		const err = (sysresult as WindowsSystemFunctionResult<number>).lastError;
-		send('CreateDirectoryA: Failed to mkdir ' + lpPathNameW.readUtf16String() + ': ' + w32strerror(err));
-	}
-	return result;
-}
-
-function _install_fopen_a2w_hook() {
-	Interceptor.replace(win32.CreateFileA, new NativeCallback(_CreateFileA2W_impl, 'pointer', ['pointer', 'int32', 'int32', 'pointer', 'int32', 'int32', 'pointer'], 'stdcall'))
-	Interceptor.replace(win32.CreateDirectoryA, new NativeCallback(_CreateDirectoryA2W_impl, 'bool', ['pointer', 'pointer'], 'stdcall'));
-}
-
 Interceptor.replace(rio_goto_offset, new NativeCallback(function () {
 	if (this !== undefined) {
 		const label = ((this.context as any).edi as NativePointer).readCString();
@@ -390,26 +308,6 @@ Interceptor.attach(load_game_offset, {
 		} else {
 			send('load_game: OK');
 		}
-	}
-});
-
-// Man I hate shift_jis gore
-Interceptor.replace(win32.MessageBoxA, new NativeCallback((hWnd, lpText, lpCaption, uType) => {
-	const lpTextW = _a2w(lpText, 'cp932');
-	const lpCaptionW = _a2w(lpCaption, 'cp932');
-	send('msgbox: ' + lpCaptionW.readUtf16String() + ': ' + lpTextW.readUtf16String());
-	send('traceback: ' + JSON.stringify(rio_traceback()));
-	return win32.MessageBoxW(hWnd, lpTextW, lpCaptionW, uType);
-}, 'int', ['pointer', 'pointer', 'pointer', 'uint32'], 'stdcall'));
-
-offset.extra_features.forEach(feature => {
-	switch (feature) {
-		case 'fopen_a2w': {
-			_install_fopen_a2w_hook();
-			break;
-		}
-		default:
-			send('extra_features: Ignoring unknown feature ' + feature);
 	}
 });
 
