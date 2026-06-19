@@ -14,7 +14,7 @@
     "watch": "frida-compile src/index.ts -o willplus-jig.js -w -c"
   },
   "devDependencies": {
-    "@types/frida-gum": "^19.6.0",
+    "@types/frida-gum": "^19.7.0",
     "@types/node": "^25.9.3",
     "frida-compile": "^19.0.5"
   }
